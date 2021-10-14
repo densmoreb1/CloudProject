@@ -3,6 +3,8 @@ import os
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from google.cloud import storage
+import datetime
 
 class user():
     def __init__(self):
@@ -13,6 +15,10 @@ class user():
         self.cred = credentials.Certificate('/Users/densmoreb/Documents/myprojects/cloud_project/activities-296f9-firebase-adminsdk-22lk4-ea227fb9e2.json')
         firebase_admin.initialize_app(self.cred)
         self.db = firestore.client()
+        # self.bucket = storage.Bucket('gs://activities-296f9.appspot.com/')
+        # self.blob = self.bucket.blob('/3a83ea6f-8934-402a-a59b-694f81612ba3-PLANTERONI_OV_PULL_002.jpg.webp')
+        # print(self.blob.generate_signed_url(datetime.timedelta(seconds=300), method='GET'))
+
 
 
 # insert activites
@@ -59,11 +65,15 @@ class user():
             print('invalid password')
         else:
             print('sucessful login')
-            self.select_activ()
+            # self.select_activ()
+            # self.show_activites()
+            self.main_menu()
 
 
-# select activites one at a time with an option of yes or no saving their pick to their username
     def select_activ(self):
+        """
+        Select activites one at a time with an option of yes or no saving their pick to their username
+        """
         docs = self.db.collection('activities').get()
         count = 0
         for item in docs:
@@ -73,14 +83,57 @@ class user():
             if count > 0:
                 choice = input('y or n? ')
                 if choice == 'y':
-                    print(item.id)
                     liked_act = {
-                        item.id : self.user_name
+                        'activity id' : item.id,
+                        'username' : self.user_name
                     }
                     self.db.collection('liked_activities').add(liked_act)
 
     def show_activites(self):
-        pass
+        """
+        Shows the activities that are matched between users
+        """
+
+        other_user = input('Who would you like to match with? \n')
+
+        other_act_id = self.db.collection('liked_activities').where('username', '==', other_user).get()
+        liked_act_id = self.db.collection('liked_activities').where('username', '==', self.user_name).get()
+        docs = self.db.collection('activities').get()
+        
+        print('Their activities: \n')
+        for item in other_act_id:
+            other_dict = item.to_dict()
+            id = other_dict['activity id']
+
+            for i in docs:
+                name = i.to_dict()
+                if i.id == id:
+                    print(f"Name: {name['name']}, Address: {name['address']}, Price: ${name['price']}")
+        
+        print('Your activities: \n')
+        for item in liked_act_id:
+            liked_dict = item.to_dict()
+            id = liked_dict['activity id']
+
+            for i in docs:
+                name = i.to_dict()
+                if i.id == id:
+                    print(f"Name: {name['name']}, Address: {name['address']}, Price: ${name['price']}")
+        return
+                    
+
+    def main_menu(self):
+        print('Welcome to your Date Night')
+        choice = input('What would you like to do? show liked activites(s), like activites(l), or quit(q)')
+        while choice != 'q':
+            if choice == 's':
+                self.show_activites()
+            elif choice == 'l':
+                self.select_activ()
+            elif choice == 'q':
+                quit()
+
+
 
 db_user = user()
 db_user.login()
