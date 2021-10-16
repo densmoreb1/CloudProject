@@ -100,7 +100,7 @@ class user():
         liked_act_id = self.db.collection('liked_activities').where('username', '==', self.user_name).get()
         docs = self.db.collection('activities').get()
         
-        print('Their activities: \n')
+        print('\nTheir activities:')
         for item in other_act_id:
             other_dict = item.to_dict()
             id = other_dict['activity id']
@@ -110,7 +110,7 @@ class user():
                 if i.id == id:
                     print(f"Name: {name['name']}, Address: {name['address']}, Price: ${name['price']}")
         
-        print('Your activities: \n')
+        print('\nYour activities:')
         for item in liked_act_id:
             liked_dict = item.to_dict()
             id = liked_dict['activity id']
@@ -119,19 +119,22 @@ class user():
                 name = i.to_dict()
                 if i.id == id:
                     print(f"Name: {name['name']}, Address: {name['address']}, Price: ${name['price']}")
-        return
+
                     
 
     def main_menu(self):
         print('Welcome to your Date Night')
-        choice = input('What would you like to do? show liked activites(s), like activites(l), or quit(q)')
+        choice = None
         while choice != 'q':
+            choice = input('What would you like to do? show liked activites(s), like activites(l), or quit(q) ')
             if choice == 's':
                 self.show_activites()
             elif choice == 'l':
                 self.select_activ()
             elif choice == 'q':
                 quit()
+            else:
+                print('wrong input ')
 
 
 
